@@ -1,7 +1,7 @@
 ﻿public class Rectangle : Formation {
 
-    public Rectangle() : base() {
-        width = 6;
-        height = 5;
+    public Rectangle(UnityEngine.Vector2 size) : base(size) {
+        width = 4;
+        height = 3;
     }
 }

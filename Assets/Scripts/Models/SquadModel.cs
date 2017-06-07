@@ -1,12 +1,13 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-public delegate void OnPathSetHandler (Path path, Speed speed);
+public delegate void OnPathSetHandler ();
+public delegate void OnBoudsSetHandler (Vector2 size);
 
 public interface ISquadModel {
 
     event OnPathSetHandler OnPathSet;
+    event OnBoudsSetHandler OnBoundsSet;
     event OnObjectDestroy OnDestroy;
 
     int Side { get;  }
@@ -15,8 +16,11 @@ public interface ISquadModel {
     float Damage { get; }
     long LastAttack { get; set; }
     Vector2 Postion { get; set; }
+    Quaternion Rotation { get; set; }
     Path Path { get; set; }
-    Vector2 Size { get; }
+    Vector2 LocalAim { get; set; }
+    Speed Speed { get; }
+    Vector2 Bounds { get; }
 
     string Formation { get; set; }
     Dictionary<string, Formation> Formations { get; }
@@ -39,9 +43,11 @@ public abstract class SquadModel : ISquadModel {
     protected long lastAttack;
     protected Speed speed;
     protected Vector2 position;
+    protected Quaternion rotation;
     protected Path path;
-    protected Dictionary<IUnitModel, Vector2> units;
-    protected Vector2 size;
+    protected Vector2 localAim;
+    protected List<IUnitModel> units;
+    protected Vector2 bounds;
 
     protected string formation;
     protected Dictionary<string, Formation> formations;
@@ -54,12 +60,14 @@ public abstract class SquadModel : ISquadModel {
         health = maxHealth;
         lastAttack = -1;
         position = iPosition;
-        units = new Dictionary<IUnitModel, Vector2>();
+        units = new List<IUnitModel>();
+        rotation = Quaternion.identity;
     }
 
-    public event OnPathSetHandler OnPathSet = (Path path, Speed speed) => { };
+    public event OnPathSetHandler OnPathSet = () => { };
     public event OnObjectDestroy OnDestroy = () => { };
-
+    public event OnBoudsSetHandler OnBoundsSet = (Vector2 bounds) => { };
+    
     public int Side {
         get { return side; }
     }
@@ -90,44 +98,73 @@ public abstract class SquadModel : ISquadModel {
         set { position = value; }
     }
 
+    public Quaternion Rotation {
+        get { return rotation; }
+        set { rotation = value; }
+    }
+    
     public Path Path {
         get { return path; }
         set {
-            OnPathSet(value, speed);
-            //Vector3 direction = (value - position).normalized;
-            //Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.forward);
-            //targetRotation.x = 0.0f;
-            //targetRotation.y = 0.0f;
-            //float angle = Quaternion.RotateTowards(Quaternion.identity, targetRotation, 1000000).eulerAngles.z;
-            //int corr = (90 <= angle && angle >= 270) ? 1 : -1;
-            //foreach (KeyValuePair<IUnitModel, Vector2> pair in units) {
-            //    Vector3 offset = Quaternion.Euler(0, 0, angle) * pair.Value * corr;
-            //    pair.Key.Aim = value + new Vector2(offset.x, offset.y);
-            //}
+            if (path != null) Path.Destroy();
             path = value;
+            if (path != null) OnPathSet();
         }
     }
 
-    public Dictionary<IUnitModel, Vector2> Units {
+    public Vector2 LocalAim {
+        get { return localAim; }
+        set {
+            localAim = value;
+            BattleArray bArray = formations[formation].Calculate(unitCount, position, rotation, localAim);
+            Vector2[][] matrix = bArray.matrix;
+            int k = 0;
+            for (int i = 0; i < matrix.Length; i++)
+            {
+                for (int j = 0; j < matrix[i].Length; j++)
+                {
+                    units[k].Aim = matrix[i][j];
+                    k++;
+                }
+            }
+            Bounds = bArray.bounds;
+        }
+    }
+
+    public Speed Speed {
+        get { return speed;  }
+    }
+
+    public List<IUnitModel> Units {
         get { return units; }
     }
 
-    public Vector2 Size {
-        get { return size; }
+    public Vector2 Bounds {
+        get { return bounds; }
+        private set {
+            bounds = value;
+            OnBoundsSet(bounds);
+        }
+
     }
 
     public string Formation {
         get { return formation; }
         set {
             formation = value;
-            Vector2 unitSize = UnitFactory.UnitSize(unitType);
-            Vector2[] offset;
-            formations[formation].Calculate(unitCount, unitSize, out offset, out size);
-            int i = 0;
-            foreach (KeyValuePair<IUnitModel, Vector2> pair in units) {
-                pair.Key.Aim = position + new Vector2(offset[i].x, offset[i].y);
-                i++;
-            }
+            LocalAim = position;
+//            BattleArray bArray = formations[formation].Calculate(unitCount, position, rotation, position);
+//            Vector2[][] matrix = bArray.matrix;
+//            int k = 0;
+//            for (int i = 0; i < matrix.Length; i++)
+//            {
+//                for (int j = 0; j < matrix[i].Length; j++)
+//                {
+//                    units[k].Aim = matrix[i][j];
+//                    k++;
+//                }
+//            }
+//            Bounds = bArray.bounds;
         }
     }
 
@@ -145,8 +182,8 @@ public abstract class SquadModel : ISquadModel {
 
     public void Destroy () {
         OnDestroy();
-        foreach (KeyValuePair<IUnitModel, Vector2> pair in units) {
-            pair.Key.Destroy();
+        for (int i = 0; i < units.Count; i++) {
+            units[i].Destroy();
         }
         foreach (KeyValuePair<string, Formation> formation in formations) {
             formation.Value.Destroy();
@@ -158,19 +195,17 @@ public abstract class SquadModel : ISquadModel {
     }
 
     protected void GenerateUnits () {
-        Vector2 unitSize = UnitFactory.UnitSize(unitType);
-        Vector2[] offset;
-        formations[formation].Calculate(unitCount, unitSize, out offset, out size);
-        for (int i = 0; i < offset.Length; i++) {
-            GenerateUnit(i, offset[i]);
-        }        
+        BattleArray bArray = formations[formation].Calculate(unitCount, position, rotation, position);
+        Vector2[][] matrix = bArray.matrix;
+        for (int i = 0; i < matrix.Length; i++)
+        {
+            for (int j = 0; j < matrix[i].Length; j++)
+            {
+                string unitName = i.ToString() + j.ToString() + "(" + name + ")";
+                IUnitModel unit = UnitFactory.Create(unitType, speed, unitName, matrix[i][j]);
+                units.Add(unit);
+            }
+        }
+        bounds = bArray.bounds;
     }
-
-    protected void GenerateUnit (int unitId, Vector2 offset) {
-        string unitName = unitId + "(" + name + ")";
-        Vector2 unitPosition = position + offset;
-        IUnitModel unit = UnitFactory.Create(unitType, speed, unitName, unitPosition);
-        units[unit] = offset;
-    }
-
 }

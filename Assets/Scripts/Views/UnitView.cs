@@ -34,10 +34,9 @@ public class UnitView : MonoBehaviour, IUnitView {
         StartCoroutine(Walk(aim, speed));
     }
 
-    IEnumerator Walk(Vector2 point, Speed speed)
-    {
+    IEnumerator Walk(Vector2 point, Speed speed) {
         Vector3 aim = new Vector3(point.x, point.y, transform.position.z);
-        yield return StartCoroutine(Rotate(aim, speed.Rotatation, 15f));
+        //yield return StartCoroutine(Rotate(aim, speed.Rotatation, 180f));
         StartCoroutine(Rotate(aim, speed.Rotatation));
         while (Vector3.Distance(transform.position, aim) >= 0.05) {
             Vector3 vector = (aim - transform.position).normalized;
@@ -49,11 +48,13 @@ public class UnitView : MonoBehaviour, IUnitView {
     }
 
     IEnumerator Rotate (Vector3 point, float speed, float sens = 1f) {
+        if (point == transform.position) yield break;
         Vector3 direction = (point - transform.position).normalized;
-        Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.forward);
+        Quaternion targetRotation = Utils.SafeQuaternion(direction, Vector3.forward);
         float treshold = 1 - sens / 2 / 180;
+
         while (-Vector3.Dot(direction, transform.up) <= treshold) {
-            targetRotation = Quaternion.LookRotation(direction, Vector3.forward);
+            targetRotation = Utils.SafeQuaternion(direction, Vector3.forward);
             targetRotation.x = 0.0f;
             targetRotation.y = 0.0f;
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, speed * Time.deltaTime);

@@ -55,7 +55,6 @@ public class InputManager {
                 DragScreen(mousePosition);
             }
         }
-        
     }
 
     private void InteractWithSquad(Vector3 position) {

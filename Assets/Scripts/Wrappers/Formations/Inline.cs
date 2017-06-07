@@ -1,7 +1,7 @@
 ﻿public class Inline : Formation {
 
-    public Inline () : base() {
-        width = 4;
+    public Inline (UnityEngine.Vector2 size) : base(size) {
+        width = 3;
         height = 7;
     }
 }

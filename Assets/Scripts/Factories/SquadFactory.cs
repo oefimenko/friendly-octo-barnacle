@@ -10,7 +10,7 @@ public class SquadFactory {
         new SquadController(model, view);
         gObject.name = name;
         SquadMonitor.Instance.Add(name, model);
-        view.GetComponent<BoxCollider2D>().size = model.Size;
+        view.GetComponent<BoxCollider2D>().size = model.Bounds;
         return model;
     }
 
@@ -21,6 +21,9 @@ public class SquadFactory {
         {
             case "SkeletonSquad":
                 model = new SkeletonModel(name, side, position);
+                break;
+            case "SpiderSquad":
+                model = new SpiderModel(name, side, position);
                 break;
             default:
                 model = null;

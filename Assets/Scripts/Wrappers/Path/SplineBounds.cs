@@ -41,12 +41,7 @@ public class SplineBounds {
         Vector3 tng = GetTangent(t);
         Vector3 nrm = GetNormal2D(tng);
         Vector3 frw = Vector3.Cross(tng, nrm);
-        Quaternion result;
-        if (tng == Vector3.zero && frw == Vector3.zero) {
-            result = Quaternion.identity;
-        } else {
-            result = Quaternion.LookRotation(frw, nrm);
-        }
+        Quaternion result = Utils.SafeQuaternion(frw, nrm);
         return result;
     }
 

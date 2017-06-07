@@ -11,29 +11,41 @@ public class SquadController {
         // Subscriptions
         model.OnPathSet += PathChange;
         model.OnDestroy += Destroy;
+        model.OnBoundsSet += BoundsChanged;
         view.OnPositionChange += PositionChange;
-        view.OnPointReached += PointReached;
+        view.OnPointReached += NextPoint;
     }
 
     public void Destroy () {
         model.OnPathSet -= PathChange;
         model.OnDestroy -= Destroy;
         view.OnPositionChange -= PositionChange;
-        view.OnPointReached -= PointReached;
+        view.OnPointReached -= NextPoint;
         view.Destroy();
         model = null;
         view = null;
     }
 
-    private void PathChange (Path path, Speed speed) {
-        //view.Navigate(path., speed);
+    private void PathChange () {
+        NextPoint ();
     }
 
-    private void PositionChange (Vector2 newPosition) {
+    private void PositionChange (Vector2 newPosition, Quaternion rotation) {
         model.Postion = newPosition;
+        model.Rotation = rotation;
     }
 
-    private void PointReached () {
-
+    private void NextPoint () {
+        Vector2? aim = model.Path.NextPoint();
+        if (aim != null) {
+            view.Navigate((Vector2)aim, model.Speed);
+            model.LocalAim = (Vector2)aim;
+        } else {
+            model.Path = null;
+        }
+    }
+    
+    private void BoundsChanged (Vector2 bounds) {
+        view.SetBounds(bounds);
     }
 }

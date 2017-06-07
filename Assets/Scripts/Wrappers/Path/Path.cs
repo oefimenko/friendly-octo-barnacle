@@ -37,7 +37,16 @@ public class Path {
     }
 
     public void Complete (Vector3 position) {
+        path.Add(position);
+    }
 
+    public Vector2? NextPoint() {
+        if (path.Count >= 1) {
+            Vector3 point3 = path[0];
+            path.RemoveAt(0);
+            return new Vector2(point3.x, point3.y);
+        } 
+        return null;
     }
 
     private void ExtendOrCollapse (Vector3 position) {

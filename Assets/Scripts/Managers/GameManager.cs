@@ -32,7 +32,8 @@ public class GameManager {
 
     private GameManager () {
         control = new InputManager();
-        SquadFactory.Create("SkeletonSquad", "SkeletonSquad1", 0, new UnityEngine.Vector2(0, 0));
+        SquadFactory.Create("SkeletonSquad", "SkeletonSquad1", 0, new UnityEngine.Vector2(-2, -2));
+        SquadFactory.Create("SpiderSquad", "SpiderSquad1", 0, new UnityEngine.Vector2(2, 2));
         SquadUIControllFactory.Create(control);
     }
 
