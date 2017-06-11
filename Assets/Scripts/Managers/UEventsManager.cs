@@ -22,11 +22,11 @@ public class UEventsManager : MonoBehaviour {
     }
 
     // Unity Events
-    public event EventHandler OnAwake = () => { };
-    public event EventHandler OnFixedUpdate = () => { };
-    public event EventHandler OnStart = () => { };
-    public event EventHandler OnUpdate = () => { };
-    public event EventHandler OnLateUpdate = () => { };
+    public event EventHandler OnAwake = delegate { };
+    public event EventHandler OnFixedUpdate = delegate { };
+    public event EventHandler OnStart = delegate { };
+    public event EventHandler OnUpdate = delegate { };
+    public event EventHandler OnLateUpdate = delegate { };
 
     void Awake () {
         OnAwake();

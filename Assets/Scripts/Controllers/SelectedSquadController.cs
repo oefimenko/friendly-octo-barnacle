@@ -33,14 +33,22 @@ public class SelectedSquadController {
     }
 
     private void OnSquadSelected (ISquadModel model) {
+        if (model != null) {
+            DisplaySquadGUI(model);
+        } else {
+            viewPresenter.HideSquadGUI();
+        }
+    }
+
+    private void OnPathProvided (Path path) {
+        model.Path = path;
+    }
+
+    private void DisplaySquadGUI (ISquadModel model) {
         this.model = model;
         string[] keys = new string[model.Formations.Count];
         model.Formations.Keys.CopyTo(keys, 0);
         viewPresenter.DisplayFormations(keys, model.Formation);
         viewPresenter.DisplaySkills(model.OffensiveSkill, model.DefensiveSkill);
-    }
-
-    private void OnPathProvided (Path path) {
-        model.Path = path;
     }
 }

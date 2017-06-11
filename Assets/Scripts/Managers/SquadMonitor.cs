@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class SquadMonitor {
 
@@ -33,7 +34,9 @@ public class SquadMonitor {
     }
     
     public ISquadModel Get (string name) {
-        return squads[name];
+        ISquadModel result;
+        squads.TryGetValue(name, out result);
+        return result;
     }
 
     public void Add (string name, ISquadModel squad) {

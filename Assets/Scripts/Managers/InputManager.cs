@@ -1,80 +1,80 @@
-﻿using System;
-using UnityEngine;
-
-public delegate void SquadClickedHandler (string name);
-public delegate void SquadPathDrawnHandler (Path path);
+﻿using UnityEngine;
 
 public class InputManager {
 
-    private GameObject gui;
-    private Path currentPath;
-    private SquadModel currentSquad;
-    private Action<Vector3> inputHandler;
-    // Refactor related functionality
-    private float dragSpeed = 2;
-    private Vector3 previousMousePosition;
-    private Path path;
+    private IGesture currentGesture;
+    private CleanClick cleanClick;
+    private PathDraw pathDraw;
+    private ScreenDrag screenDrag;
+    private ScreenResize screenResize;
+    private SquadSelect squadSelect;
     // events
-    public event SquadClickedHandler OnSquadClicked;
-    public event SquadPathDrawnHandler OnSquadPathDrawn;
-
+    public event SquadClickHandler OnSquadClicked = delegate { };
+    public event SquadPathDrawnHandler OnSquadPathDrawn = delegate { };
+    
+    
     public InputManager () {
-        gui = GameObject.FindGameObjectWithTag("GUI");
+        cleanClick = new CleanClick();
+        pathDraw = new PathDraw();
+        screenDrag = new ScreenDrag();
+        screenResize = new ScreenResize();
+        squadSelect = new SquadSelect();
+        
         UEventsManager.Instance.OnLateUpdate += Update;
+        cleanClick.OnGestureFinish += CleanGestureHandler;
+        pathDraw.OnGestureFinish += CleanGestureHandler;
+        screenDrag.OnGestureFinish += CleanGestureHandler;
+        screenResize.OnGestureFinish += CleanGestureHandler;
+        squadSelect.OnGestureFinish += CleanGestureHandler;
+
+        cleanClick.OnCleanClick += (string name) => OnSquadClicked(name);
+        squadSelect.OnSquadClick += (string name) => OnSquadClicked(name);
+        pathDraw.OnPathDrawFinish += (Path path) => OnSquadPathDrawn(path);
     }
 
     public void Destroy () {
         UEventsManager.Instance.OnLateUpdate -= Update;
-        currentPath = null;
-        currentSquad = null;
-        inputHandler = null;
-        GameObject.Destroy(gui);
+        cleanClick.OnGestureFinish -= CleanGestureHandler;
+        pathDraw.OnGestureFinish -= CleanGestureHandler;
+        screenDrag.OnGestureFinish -= CleanGestureHandler;
+        screenResize.OnGestureFinish -= CleanGestureHandler;
+        squadSelect.OnGestureFinish -= CleanGestureHandler;
+        cleanClick.OnCleanClick -= OnSquadClicked;
+        squadSelect.OnSquadClick -= OnSquadClicked;
+        cleanClick = null;
+        pathDraw = null;
+        screenDrag = null;
+        screenResize = null;
+        squadSelect = null;
+        GameObject.Destroy(GameObject.FindGameObjectWithTag("GUI"));
     }
 
     private void Update () {
         Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        if (inputHandler != null) {
-            inputHandler(mousePosition);
-        } else if (Input.GetMouseButtonDown(0)) {
-            previousMousePosition = mousePosition;
+        if (currentGesture != null) {
+            currentGesture.Update(mousePosition);
+        } else {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit2D[] colliders = Physics2D.GetRayIntersectionAll(ray);
-            GameObject collider = null;
-            for (int i = 0; i < colliders.Length; i++ ) {
-                if (colliders[i].collider.gameObject.GetComponent<ISquadView>() != null) {
-                    collider = colliders[i].collider.gameObject;
-                }
+            if (screenResize.Condition(mousePosition, colliders))
+            {
+                currentGesture = screenResize;
             }
-            if (collider != null) {
-                inputHandler = InteractWithSquad;
-                OnSquadClicked(collider.transform.gameObject.name);
-                path = new Path(collider.transform.position);
-                InteractWithSquad(mousePosition);
-            } else {
-                inputHandler = DragScreen;
-                DragScreen(mousePosition);
+            else if (Input.GetMouseButtonDown(0))
+            {
+                if (cleanClick.Condition(mousePosition, colliders)) currentGesture = cleanClick;
+                else if (squadSelect.Condition(mousePosition, colliders)) currentGesture = squadSelect;
+            }
+            else if (Input.GetMouseButton(0))
+            {
+                if (screenDrag.Condition(mousePosition, colliders)) currentGesture = screenDrag;
+                else if (pathDraw.Condition(mousePosition, colliders)) currentGesture = pathDraw;
             }
         }
     }
 
-    private void InteractWithSquad(Vector3 position) {
-        path.Update(position);
-        if (Input.GetMouseButtonUp(0)) {
-            inputHandler = null;
-            path.Complete(position);
-            OnSquadPathDrawn(path);
-        }
-    }
-
-    private void DragScreen (Vector3 position) {
-        Vector3 direction = (position - previousMousePosition).normalized * Time.deltaTime * dragSpeed;
-        Camera.main.transform.position = new Vector3(
-            Camera.main.transform.position.x + direction.x,
-            Camera.main.transform.position.y + direction.y,
-            Camera.main.transform.position.z
-        );
-        previousMousePosition = position;
-        if (Input.GetMouseButtonUp(0)) inputHandler = null;
+    private void CleanGestureHandler() {
+        currentGesture = null;
     }
 
 }

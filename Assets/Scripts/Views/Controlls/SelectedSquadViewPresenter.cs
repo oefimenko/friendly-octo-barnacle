@@ -69,7 +69,12 @@ public class SelectedSquadViewPresenter {
 
     public void DisplaySkills(string offensive, string defensive) {
         skills[0].SetValue(offensive);
-        skills[1].SetValue(offensive);
+        skills[1].SetValue(defensive);
+    }
+
+    public void HideSquadGUI () {
+        for (int i = 0; i < formations.Length; i++) formations[i].Hide();
+        for (int i = 0; i < skills.Length; i++) skills[i].Hide();
     }
 
     public void Destory () {
