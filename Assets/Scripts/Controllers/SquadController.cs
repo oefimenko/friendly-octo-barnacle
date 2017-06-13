@@ -14,9 +14,16 @@ public class SquadController {
         model.OnBoundsSet += BoundsChanged;
         view.OnPositionChange += PositionChange;
         view.OnPointReached += NextPoint;
+        
+        GameSyncQueue.Instance.AddListener<PathAssignedMessage>(OnPathSet, model.Name);
+        GameSyncQueue.Instance.AddListener<FormationChangedMessage>(OnFormationSet, model.Name);
+        GameSyncQueue.Instance.AddListener<SkillUsedMessage>(OnSkillUsed, model.Name);
     }
 
     public void Destroy () {
+        GameSyncQueue.Instance.RemoveListener<PathAssignedMessage>(OnPathSet);
+        GameSyncQueue.Instance.RemoveListener<FormationChangedMessage>(OnFormationSet);
+        GameSyncQueue.Instance.RemoveListener<SkillUsedMessage>(OnSkillUsed);
         model.OnPathSet -= PathChange;
         model.OnDestroy -= Destroy;
         view.OnPositionChange -= PositionChange;
@@ -47,5 +54,17 @@ public class SquadController {
     
     private void BoundsChanged (Vector2 bounds) {
         view.SetBounds(bounds);
+    }
+
+    private void OnFormationSet (FormationChangedMessage msg) {
+        model.Formation = msg.Formation;
+    }
+
+    private void OnSkillUsed (SkillUsedMessage msg) {
+        Debug.Log("Called skill is not implemented: " + msg.Skill);
+    }
+    
+    private void OnPathSet (PathAssignedMessage msg) {
+        model.Path = msg.Path;
     }
 }

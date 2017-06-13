@@ -29,8 +29,12 @@ public class GameManager {
     }
 
     private InputManager control;
+    private GameMessageClient gameMessageClient;
+    private GameSyncClient gameSyncClient;
 
     private GameManager () {
+        gameSyncClient = new GameSyncClient();
+        gameMessageClient = new GameMessageClient(gameSyncClient);
         control = new InputManager();
         SquadFactory.Create("SkeletonSquad", "SkeletonSquad1", 0, new UnityEngine.Vector2(-2, -2));
         SquadFactory.Create("SpiderSquad", "SpiderSquad1", 0, new UnityEngine.Vector2(2, 2));
@@ -44,6 +48,14 @@ public class GameManager {
         // Destroy all path
         UEventsManager.Purge();
         control = null;
+        // Messaging
+        gameSyncClient.Destroy();
+        gameMessageClient.Destroy();
+        gameSyncClient = null;
+        gameMessageClient = null;
+        
+        GameMessageQueue.Purge();
+        GameSyncQueue.Purge();
     }
 
 }
