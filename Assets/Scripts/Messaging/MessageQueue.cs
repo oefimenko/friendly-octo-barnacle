@@ -70,7 +70,7 @@ public class MessageQueue {
         MessageDelegate del;
         if (delegates.TryGetValue(msg.GetType(), out del)) {
             del.Invoke(msg, "All");
-            del.Invoke(msg, msg.Squad.Name);
+            del.Invoke(msg, msg.SquadName);
         }
     }
 

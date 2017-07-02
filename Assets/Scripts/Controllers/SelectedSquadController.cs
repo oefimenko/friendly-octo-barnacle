@@ -25,11 +25,11 @@ public class SelectedSquadController {
     }
 
     private void OnFormationProvided (string formation) {
-        GameMessageQueue.Instance.QueueEvent(new FormationChangedMessage(model, formation));
+		GameMessageQueue.Instance.QueueEvent(new FormationChangedMessage(model.Name, formation));
     }
 
     private void OnSkillProvided (string skill) {
-        GameMessageQueue.Instance.QueueEvent(new SkillUsedMessage(model, skill));
+		GameMessageQueue.Instance.QueueEvent(new SkillUsedMessage(model.Name, skill));
         Debug.Log("Called skill is not implemented: " + skill);
     }
 
@@ -41,8 +41,8 @@ public class SelectedSquadController {
         }
     }
 
-    private void OnPathProvided (Path path) {
-        GameMessageQueue.Instance.QueueEvent(new PathAssignedMessage(model, path));
+    private void OnPathProvided (IPath path) {
+		GameMessageQueue.Instance.QueueEvent(new PathAssignedMessage(model.Name, path));
     }
 
     private void DisplaySquadGUI (ISquadModel model) {

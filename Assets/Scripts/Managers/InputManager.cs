@@ -29,7 +29,7 @@ public class InputManager {
 
         cleanClick.OnCleanClick += (string name) => OnSquadClicked(name);
         squadSelect.OnSquadClick += (string name) => OnSquadClicked(name);
-        pathDraw.OnPathDrawFinish += (Path path) => OnSquadPathDrawn(path);
+        pathDraw.OnPathDrawFinish += (IPath path) => OnSquadPathDrawn(path);
     }
 
     public void Destroy () {

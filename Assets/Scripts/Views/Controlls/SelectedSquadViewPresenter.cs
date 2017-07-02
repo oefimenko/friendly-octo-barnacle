@@ -4,14 +4,14 @@ using System.Collections;
 public delegate void FormationProvidedHandler (string formation);
 public delegate void SkillProvidedHandler (string skill);
 public delegate void SquadSelectedHandler (ISquadModel squad);
-public delegate void PathProvidedHandler (Path path);
+public delegate void PathProvidedHandler (IPath path);
 
 public class SelectedSquadViewPresenter {
 
     public event FormationProvidedHandler OnFormationProvided = (string formation) => { };
     public event SkillProvidedHandler OnSkillProvided = (string skill) => { };
     public event SquadSelectedHandler OnSquadSelected = (ISquadModel squad) => { };
-    public event PathProvidedHandler OnPathProvided = (Path path) => { };
+	public event PathProvidedHandler OnPathProvided = (IPath path) => { };
     public event OnObjectDestroy OnObjectDestroy = () => { };
 
     private ButtonView[] formations;
@@ -39,7 +39,7 @@ public class SelectedSquadViewPresenter {
         OnSquadSelected(SquadMonitor.Instance.Get(name));
     }
 
-    private void OnPathDrawn (Path path) {
+	private void OnPathDrawn (IPath path) {
         OnPathProvided(path);
     }
 

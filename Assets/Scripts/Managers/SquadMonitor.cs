@@ -35,7 +35,7 @@ public class SquadMonitor {
     
     public ISquadModel Get (string name) {
         ISquadModel result;
-        squads.TryGetValue(name, out result);
+		squads.TryGetValue(name, out result);
         return result;
     }
 

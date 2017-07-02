@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 
-public delegate void SquadPathDrawnHandler (Path path);
+public delegate void SquadPathDrawnHandler (IPath path);
 
 public class PathDraw : IGesture {
 
-	private Path currentPath;
+	private IPath currentPath;
 	private GameObject gui;
 
 	public PathDraw () {
@@ -19,7 +19,7 @@ public class PathDraw : IGesture {
 		for (int i = 0; i < colliders.Length; i++ ) {
 			if (colliders[i].collider.gameObject.GetComponent<ISquadView>() != null) {
 				collider = colliders[i].collider.gameObject;
-				currentPath = new Path(mousePosition);
+				currentPath = new RenderedPath(mousePosition);
 				gui.SetActive(false);
 			}
 		}
@@ -27,12 +27,14 @@ public class PathDraw : IGesture {
 	}
     
 	public void Update (Vector3 mousePosition) {
-		currentPath.Update(mousePosition);
-		if (Input.GetMouseButtonUp(0)) {
-			OnPathDrawFinish(currentPath);
+		if (Input.GetMouseButtonUp (0)) {
+			currentPath.Complete(mousePosition);
+			OnPathDrawFinish (currentPath);
 			currentPath = null;
-			gui.SetActive(true);
-			OnGestureFinish();
+			gui.SetActive (true);
+			OnGestureFinish ();
+		} else {
+			currentPath.Update(mousePosition);
 		}
 		
 	}

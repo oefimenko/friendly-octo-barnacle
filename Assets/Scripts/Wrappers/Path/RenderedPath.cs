@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class Path {
+public class RenderedPath : IPath {
 
     private int maxLength = 50;
     private float chainLength = 1f;
@@ -9,13 +10,14 @@ public class Path {
     private int collapseValue = 5;
     private MeshFilter mf;
     private Mesh mesh;
+	string name;
     private List<Vector3> path = new List<Vector3>();
     private List<Vector3> vertices = new List<Vector3>();
     private List<Vector3> normals = new List<Vector3>();
     private List<Vector2> uvs = new List<Vector2>();
     private List<int> triangles = new List<int>();
 
-    public Path (Vector3 position) {
+	public RenderedPath (Vector3 position) {
         GameObject prefab = ResourceManager.Instance.Get("Misc", "Path");
         GameObject gObject = Object.Instantiate(prefab, new Vector3(0, 0), Quaternion.identity);
         mf = gObject.GetComponent<MeshFilter>();
@@ -37,7 +39,13 @@ public class Path {
     }
 
     public void Complete (Vector3 position) {
-        path.Add(position);
+		Update(position);
+		string x1 = ((int)(path[0].x * 1000)).ToString();
+		string y1 = ((int)(path[0].y * 1000)).ToString();
+		string x2 = ((int)(path[path.Count - 1].x * 1000)).ToString();
+		string y2 = ((int)(path[path.Count - 1].y * 1000)).ToString();
+		name = x1 + y1 + x2 + y2;
+		PathsHandler.Instance.Add(name, this);
     }
 
     public Vector2? NextPoint() {
@@ -194,11 +202,25 @@ public class Path {
     }
 
     public void Destroy () {
-        mf.mesh = null;
+		if (mf) {
+			mf.mesh = null;
+			GameObject.Destroy (mf.gameObject);
+		}
         mesh.Clear();
         GameObject.Destroy(mesh);
-        GameObject.Destroy(mf.gameObject);
         mf = null;
         mesh = null;
+		path.Clear();
+		PathsHandler.Instance.Remove(name);
     }
+
+	public override string ToString () {
+		string result = "";
+		for (int i = 0; i < path.Count; i++) {
+			string x = ((int)(path[i].x * 1000)).ToString();
+			string y = ((int)(path[i].y * 1000)).ToString();
+			result += x + ":" + y + ":";
+		}
+		return result.TrimEnd(':');
+	}
 }

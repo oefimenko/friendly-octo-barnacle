@@ -1,6 +1,7 @@
 ﻿//using System.Collections;
 //using System.Collections.Generic;
 //using UnityEngine;
+using System;
 using System.Threading;
 
 public class GameManager {
@@ -30,52 +31,58 @@ public class GameManager {
     }
 
     private InputManager control;
-    private GameMessageClient gameMessageClient;
-    private GameSyncClient gameSyncClient;
-    private Thread gameSyncClientThread;
-    private Thread gameMessageClientThread;
+	private HTTPClient client;
+	private UDPClient gameUDPClient;
+	private Thread gameUDPClientThread;
 
     private GameManager () {
         StartMessageClients();
-        
         control = new InputManager();
-        SquadFactory.Create("SkeletonSquad", "SkeletonSquad1", 0, new UnityEngine.Vector2(-2, -2));
-        SquadFactory.Create("SpiderSquad", "SpiderSquad1", 0, new UnityEngine.Vector2(2, 2));
         SquadUIControllFactory.Create(control);
+
+		GameSyncQueue.Instance.AddListener<InitMessage>(OnInit);
+
+		client = new HTTPClient(Endpoints.HTTPEndpoint);
+		client.Login("test_user");
+		client.Training ();
     }
 
     public void Destroy () {
-
         ResourceManager.Purge();
         control.Destroy();
         // Destroy all path
+		PathsHandler.Purge();
         UEventsManager.Purge();
         control = null;
-        // Messaging
-        gameSyncClient.Destroy();
-        gameMessageClient.Destroy();
-        gameSyncClient = null;
-        gameMessageClient = null;
         
-        gameSyncClientThread.Abort();
-        gameMessageClientThread.Abort();
-        
+		// Messaging
+		gameUDPClient.Destroy();
+		gameUDPClient = null;
+		gameUDPClientThread.Abort();
         GameMessageQueue.Purge();
         GameSyncQueue.Purge();
+		GameSyncQueue.Instance.RemoveListener<InitMessage>(OnInit);
     }
 
     private void StartMessageClients () {
         var stub1 = GameMessageQueue.Instance;
         var stub2 = GameSyncQueue.Instance;
         
-        
-        ThreadStart childrefSync = () => { gameSyncClient = new GameSyncClient(); };
-        gameSyncClientThread = new Thread(childrefSync);
-        gameSyncClientThread.Start();
-        
-        ThreadStart childrefGame = () => { gameMessageClient = new GameMessageClient(gameSyncClient); };
-        gameMessageClientThread = new Thread(childrefGame);   
-        gameMessageClientThread.Start();
+		gameUDPClient = new UDPClient(Endpoints.ListenPort, Endpoints.ServerIP); 
+		ThreadStart childrefSync = () => { 
+			gameUDPClient.StartListener();
+		};
+		gameUDPClientThread = new Thread(childrefSync);
+		gameUDPClientThread.IsBackground = true;
+		gameUDPClientThread.Start();
     }
     
+	private void OnInit (InitMessage msg) {
+		for (int i = 0; i < msg.Squads.Length; i++) {
+			SquadFactory.Create(
+				msg.Squads[i].Type, msg.Squads[i].Name, msg.Squads[i].Side, msg.Squads[i].Postion
+			);
+		}
+	}
+
 }

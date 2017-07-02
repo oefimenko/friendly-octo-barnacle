@@ -27,10 +27,13 @@ public class UEventsManager : MonoBehaviour {
     public event EventHandler OnStart = delegate { };
     public event EventHandler OnUpdate = delegate { };
     public event EventHandler OnLateUpdate = delegate { };
+	public event EventHandler OnDestroyEvent = delegate { };
+
+	private GameManager gManager;
 
     void Awake () {
         OnAwake();
-        var stub = GameManager.Instance;
+		gManager = GameManager.Instance;
     }
 
     void Start () {
@@ -48,4 +51,9 @@ public class UEventsManager : MonoBehaviour {
     void LateUpdate () {
         OnLateUpdate();
     }
+
+	void OnDestroy () {
+		gManager.Destroy ();
+		OnDestroyEvent ();
+	}
 }

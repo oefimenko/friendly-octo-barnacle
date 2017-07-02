@@ -17,7 +17,7 @@ public interface ISquadModel {
     long LastAttack { get; set; }
     Vector2 Postion { get; set; }
     Quaternion Rotation { get; set; }
-    Path Path { get; set; }
+	IPath Path { get; set; }
     Vector2 LocalAim { get; set; }
     Speed Speed { get; }
     Vector2 Bounds { get; }
@@ -44,7 +44,7 @@ public abstract class SquadModel : ISquadModel {
     protected Speed speed;
     protected Vector2 position;
     protected Quaternion rotation;
-    protected Path path;
+	protected IPath path;
     protected Vector2 localAim;
     protected List<IUnitModel> units;
     protected Vector2 bounds;
@@ -103,7 +103,7 @@ public abstract class SquadModel : ISquadModel {
         set { rotation = value; }
     }
     
-    public Path Path {
+	public IPath Path {
         get { return path; }
         set {
             if (path != null) Path.Destroy();
