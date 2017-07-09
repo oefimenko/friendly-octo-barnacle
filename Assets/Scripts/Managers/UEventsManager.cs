@@ -29,11 +29,11 @@ public class UEventsManager : MonoBehaviour {
     public event EventHandler OnLateUpdate = delegate { };
 	public event EventHandler OnDestroyEvent = delegate { };
 
-	private GameManager gManager;
+	private MatchManager gManager;
 
     void Awake () {
         OnAwake();
-		gManager = GameManager.Instance;
+		gManager = MatchManager.Instance;
     }
 
     void Start () {
