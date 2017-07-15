@@ -43,6 +43,7 @@ public class UDPClient {
     public void Destroy () {
 		listen = false;
 		updClient.Close();
+		messagesSent.Clear();
 
 		GameMessageQueue.Instance.RemoveListener<PathAssignedMessage>(PathAssigned);
 		GameMessageQueue.Instance.RemoveListener<FormationChangedMessage>(FormationChanged);
