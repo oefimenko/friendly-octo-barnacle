@@ -32,6 +32,8 @@ public class GameManager {
 	private string username;
 	private HTTPClient client;
 
+	public string UserName { get { return username; } }
+
 	private GameManager () {
 		client = new HTTPClient(Endpoints.HTTPEndpoint);
 		gui = GameObject.FindGameObjectWithTag ("MainMenuGUI");

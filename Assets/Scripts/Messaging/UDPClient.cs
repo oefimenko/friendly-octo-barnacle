@@ -1,6 +1,6 @@
 ﻿using System;  
 using System.Net;  
-using System.Net.Sockets;  
+using System.Net.Sockets;
 using System.Text;
 using System.Collections.Generic;
 using System.Threading;
@@ -19,18 +19,25 @@ public class UDPClient {
 	private Deserializer deserializer;
 	private Serializer serializer;
 
-	public UDPClient (int port, string serverIP) {
+	public UDPClient (int port, string serverIP, int serverPort) {
 		listen = true;
 		selfPort = port;
 		updClient = new UdpClient(selfPort);
+
 		ip = IPAddress.Parse (serverIP);
+		this.serverPort = serverPort;
+		sendEP = new IPEndPoint(ip, this.serverPort);
+
 		readEP = new IPEndPoint(IPAddress.Any, port);
+
 		deserializer = new Deserializer();
 		serializer = new Serializer();
 
 		GameMessageQueue.Instance.AddListener<PathAssignedMessage>(PathAssigned);
 		GameMessageQueue.Instance.AddListener<FormationChangedMessage>(FormationChanged);
 		GameMessageQueue.Instance.AddListener<SkillUsedMessage>(SkillUsed);
+
+		SendWithHeaders(serializer.Serialize(new Connection(GameManager.Instance.UserName)));
 	}
 
     public void Destroy () {
@@ -82,26 +89,25 @@ public class UDPClient {
 	}
 
 	private void ProcessIncoming (string body) {
-		int type = Int16.Parse (body[0].ToString());
+		int type = Int16.Parse (body[0].ToString() + body[1].ToString());
 		switch (type)
 		{
-		case 0:
-			InitMessage msg = deserializer.ParseInit (body);
-			serverPort = msg.Port;
-			sendEP = new IPEndPoint(ip, serverPort);
-			GameSyncQueue.Instance.QueueEvent(msg);
+		case 12:
+			GameSyncQueue.Instance.QueueEvent(deserializer.ParseInit (body));
 			break;
-		case 1:
+		case 21:
 //			GameSyncQueue.Instance.QueueEvent(deserializer.ParseState(body));
 			break;
-		case 2:
+		case 22:
 			GameSyncQueue.Instance.QueueEvent(deserializer.ParsePath(body));
 			break;
-		case 3:
+		case 23:
 			GameSyncQueue.Instance.QueueEvent(deserializer.ParseFormation(body));
 			break;
-		case 4:
+		case 24:
 //			GameSyncQueue.Instance.QueueEvent(deserializer.ParseSkill(body));
+			break;
+		default:
 			break;
 		}
 	}

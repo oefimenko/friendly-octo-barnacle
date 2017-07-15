@@ -8,13 +8,12 @@ public class Deserializer {
 		
 		InitMessage result = new InitMessage ();
 		string[] prms = body.Split (';');
-		result.Port = Int16.Parse (prms[1]);
 		result.User1 = prms[1];
-		result.User1Side = Int16.Parse (prms[3]);
-		result.User2 = prms[1];
-		result.User2Side = Int16.Parse (prms[5]);
+		result.User1Side = Int16.Parse (prms[2]);
+		result.User2 = prms[3];
+		result.User2Side = Int16.Parse (prms[4]);
 
-		int bse = 6;
+		int bse = 5;
 		SquadStruct[] squads = new SquadStruct[prms.Length - bse];
 		for (int i = 0; i < squads.Length; i++) {
 			squads [i] = SquadStruct.FromString (prms [i + bse]);

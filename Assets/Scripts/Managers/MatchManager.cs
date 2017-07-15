@@ -33,7 +33,6 @@ public class MatchManager {
 
     private MatchManager () {
         StartMessageClients();
-		GameSyncQueue.Instance.AddListener<InitMessage>(OnInit);
         control = new InputManager();
         SquadUIControllFactory.Create(control);
     }
@@ -59,7 +58,9 @@ public class MatchManager {
         var stub1 = GameMessageQueue.Instance;
         var stub2 = GameSyncQueue.Instance;
         
-		gameUDPClient = new UDPClient(Endpoints.ListenPort, Endpoints.ServerIP); 
+		GameSyncQueue.Instance.AddListener<InitMessage>(OnInit);
+
+		gameUDPClient = new UDPClient(Endpoints.ListenPort, Endpoints.ServerIP, Endpoints.ServerPort); 
 		ThreadStart childrefSync = () => { 
 			gameUDPClient.StartListener();
 		};

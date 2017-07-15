@@ -4,9 +4,16 @@ public interface IGameMessage {
     string SquadName { get; }
 }
 
+public class Connection : IGameMessage {
+	public string SquadName { get; set; }
+	public Connection (string username) { 
+		SquadName = username;
+	}
+}
+
 public class InitMessage : IGameMessage {
 
-	public static int id = 0;
+	public static int id = 12;
 
 	public string SquadName { get; set; }
 	public int Port { get; set; }
@@ -23,7 +30,7 @@ public class InitMessage : IGameMessage {
 
 public class PathAssignedMessage : IGameMessage {
     
-	public static int id = 2;
+	public static int id = 22;
 
 	public string SquadName { get; private set; }
     public IPath Path { get; private set; }
@@ -36,7 +43,7 @@ public class PathAssignedMessage : IGameMessage {
 
 public class FormationChangedMessage : IGameMessage {
     
-	public static int id = 3;
+	public static int id = 23;
 
 	public string SquadName { get; private set; }
     public string Formation { get; private set; }
@@ -49,7 +56,7 @@ public class FormationChangedMessage : IGameMessage {
 
 public class SkillUsedMessage : IGameMessage {
     
-	public static int id = 4;
+	public static int id = 24;
 
 	public string SquadName { get; private set; }
     public string Skill { get; private set; }
@@ -62,7 +69,7 @@ public class SkillUsedMessage : IGameMessage {
 
 public class SquadSyncMessage : IGameMessage {
     
-	public static int id = 1;
+	public static int id = 21;
 
 	public string SquadName { get; private set; }
     

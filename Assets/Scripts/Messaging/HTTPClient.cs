@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using System.Net;
 using System.IO;
@@ -28,14 +29,16 @@ public class HTTPClient {
 	public bool Skirmish () {
 		string payload = "{\"user_name\": \"" + username + "\"}";
 		byte[] data = Encoding.ASCII.GetBytes(payload);
-		SendSync (skirmish, data);
+		string result = SendSync (skirmish, data);
+		Endpoints.ServerPort = int.Parse(result);
 		return true;
 	}
 
 	public bool Training () {
 		string payload = "{\"user_name\": \"" + username + "\"}";
 		byte[] data = Encoding.ASCII.GetBytes(payload);
-		SendSync (training, data);
+		string result = SendSync (training, data);
+		Endpoints.ServerPort = int.Parse(result);
 		return true;
 	}
 
