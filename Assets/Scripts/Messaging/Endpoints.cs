@@ -7,8 +7,9 @@ public static class Endpoints {
 	private static int httpPort = 8880;
 	private static int listenPort = 21000;
 	private static int serverPort;
+	private static string hash;
 
-	private static string server = server2;
+	private static string server = server1;
 
 	public static int ListenPort { get { return listenPort; } }
 	public static int ServerPort { get { return serverPort; } set { serverPort = value; } }
@@ -17,5 +18,6 @@ public static class Endpoints {
 			return "http://" + server + ":" + httpPort.ToString(); 
 		}
 	}
+	public static string Hash { get { return hash; } set { hash = value; } }
 
 }

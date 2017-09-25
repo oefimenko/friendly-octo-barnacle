@@ -27,6 +27,7 @@ public class UnitView : MonoBehaviour, IUnitView {
 
     public void SetState (int state) {
         animator.SetInteger("State", state);
+		animator.SetFloat("Seed", Random.value);
     }
 
     public void Navigate(Vector2 aim, Speed speed) {

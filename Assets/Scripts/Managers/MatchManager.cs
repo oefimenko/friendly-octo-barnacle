@@ -35,11 +35,13 @@ public class MatchManager {
         StartMessageClients();
         control = new InputManager();
         SquadUIControllFactory.Create(control);
+		GameTime stub = GameTime.Instance;
     }
 
     public void Destroy () {
         ResourceManager.Purge();
         control.Destroy();
+		GameTime.Instance.Destroy();
         // Destroy all path
 		PathsHandler.Purge();
         UEventsManager.Purge();
@@ -60,7 +62,7 @@ public class MatchManager {
         
 		GameSyncQueue.Instance.AddListener<InitMessage>(OnInit);
 
-		gameUDPClient = new UDPClient(Endpoints.ListenPort, Endpoints.ServerIP, Endpoints.ServerPort); 
+		gameUDPClient = new UDPClient(Endpoints.ListenPort, Endpoints.ServerIP, Endpoints.ServerPort, Endpoints.Hash);
 		ThreadStart childrefSync = () => { 
 			gameUDPClient.StartListener();
 		};

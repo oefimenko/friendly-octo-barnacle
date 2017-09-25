@@ -12,6 +12,11 @@ public class HTTPClient {
 	private string training;
 	private string username;
 
+	public struct MatchInfo {
+		public int port;
+		public string hash;
+	}
+
 	public HTTPClient (string baseURL) {
 		login = baseURL + "/login";
 		skirmish = baseURL + "/skirmish";
@@ -30,7 +35,9 @@ public class HTTPClient {
 		string payload = "{\"user_name\": \"" + username + "\"}";
 		byte[] data = Encoding.ASCII.GetBytes(payload);
 		string result = SendSync (skirmish, data);
-		Endpoints.ServerPort = int.Parse(result);
+		MatchInfo match = JsonUtility.FromJson<MatchInfo>(result);
+		Endpoints.ServerPort = match.port;
+		Endpoints.Hash = match.hash;
 		return true;
 	}
 
@@ -38,7 +45,9 @@ public class HTTPClient {
 		string payload = "{\"user_name\": \"" + username + "\"}";
 		byte[] data = Encoding.ASCII.GetBytes(payload);
 		string result = SendSync (training, data);
-		Endpoints.ServerPort = int.Parse(result);
+		MatchInfo match = JsonUtility.FromJson<MatchInfo>(result);
+		Endpoints.ServerPort = match.port;
+		Endpoints.Hash = match.hash;
 		return true;
 	}
 

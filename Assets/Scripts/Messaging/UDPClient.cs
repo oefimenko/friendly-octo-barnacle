@@ -7,8 +7,50 @@ using System.Threading;
 
 public class UDPClient {
 
+	public static byte[] SubBytes(byte[] bytes, int start, int length) {
+		byte[] result = new byte[length];
+		Array.Copy(bytes, start, result, 0, length);
+		return result;
+	}
+
+	public struct Message {
+		public byte[] raw;
+		public byte type;
+		public byte ack;
+		public int method;
+		public string stamp;
+		public string hash;
+		public string body;
+
+		public Message(byte[] bytes) {
+			raw = bytes;
+			type = bytes[0];
+			ack = bytes[1];
+			stamp = Encoding.ASCII.GetString(bytes, 2, 16);
+			if (type == 0) {
+				hash = Encoding.ASCII.GetString(bytes, 18, 16);
+				method = bytes[34] * 10 + bytes[35];
+				body = Encoding.ASCII.GetString(bytes, 36, bytes.Length - 36);
+			} else {
+				hash = null;
+				method = -1;
+				body = null;
+			}
+		}
+
+		public override string ToString() {
+			return "Type: " + type.ToString() +
+			"; ACK: " + ack.ToString() +
+			"; STAMP: " + stamp +
+			"; HASH: " + hash +
+			"; METHOD: " + type.ToString() +
+			"; BODY: " + body;
+		}
+	}
+
 	private UdpClient updClient;
 	private IPAddress ip;
+	private string hash;
 	private IPEndPoint readEP;
 	private IPEndPoint sendEP;
 	private int selfPort;
@@ -19,13 +61,14 @@ public class UDPClient {
 	private Deserializer deserializer;
 	private Serializer serializer;
 
-	public UDPClient (int port, string serverIP, int serverPort) {
+	public UDPClient (int port, string serverIP, int serverPort, string hash) {
 		listen = true;
 		selfPort = port;
 		updClient = new UdpClient(selfPort);
 
 		ip = IPAddress.Parse (serverIP);
 		this.serverPort = serverPort;
+		this.hash = hash;
 		sendEP = new IPEndPoint(ip, this.serverPort);
 
 		readEP = new IPEndPoint(IPAddress.Any, port);
@@ -56,8 +99,10 @@ public class UDPClient {
 			while (listen)   
 			{
 				byte[] bytes = updClient.Receive(ref readEP);
-				UnityEngine.Debug.Log("Received from " + readEP.ToString() + " : " + Encoding.ASCII.GetString(bytes,2,bytes.Length - 2));
-				CheckIncoming(bytes);
+				Message msg = new Message(bytes);
+//				UnityEngine.Debug.Log("Received from " + readEP.ToString() + " : " + Encoding.ASCII.GetString(bytes,2,bytes.Length - 2));
+				UnityEngine.Debug.Log("Received: " + msg.ToString());
+				CheckIncoming(msg);
 			}  
 		}   
 		catch (Exception e)
@@ -69,41 +114,46 @@ public class UDPClient {
 		}  
 	}
 
-	private void CheckIncoming (byte[] bytes) {
-		if (bytes[0] == 0 && bytes[1] == 1)
+	private void CheckIncoming (Message msg) {
+		if (msg.type == 0 && msg.ack == 1)
 		{
-			ProcessIncoming (Encoding.ASCII.GetString(bytes, 18, bytes.Length - 18));
-			Acknowledge (bytes);
+			Acknowledge (msg.raw);
+			ProcessIncoming(msg);
 		} 
-		else if (bytes[0] == 0 && bytes[1] == 0)
+		else if (msg.type == 0 && msg.ack == 0)
 		{
-			ProcessIncoming (Encoding.ASCII.GetString(bytes, 18, bytes.Length - 18));
+			ProcessIncoming(msg);
 		} 
-		else if ((bytes[0] == 1 && bytes[1] == 0) || (bytes[0] == 0 && bytes[1] == 1))
+		else if ((msg.type == 1 && msg.ack == 0) || (msg.type == 0 && msg.ack == 1))
 		{
-			messagesSent.Remove(Encoding.ASCII.GetString(bytes, 2, 16));
+			messagesSent.Remove(msg.stamp);
 		} 
-		else 
+		else
 		{
 			UnityEngine.Debug.Log ("UNKNOWN MESSAGE TYPE");
 		}
 	}
 
-	private void ProcessIncoming (string body) {
-		int type = Int16.Parse (body[0].ToString() + body[1].ToString());
-		switch (type)
+	private void ProcessIncoming (Message msg) {
+		switch (msg.method)
 		{
+		case 11:
+			break;
 		case 12:
-			GameSyncQueue.Instance.QueueEvent(deserializer.ParseInit (body));
+			long time = Int64.Parse(msg.stamp) + Int64.Parse(msg.body);
+			GameTime.Instance.SetTime(time);
+			break;
+		case 13:
+			GameSyncQueue.Instance.QueueEvent(deserializer.ParseInit(msg.body));
 			break;
 		case 21:
 //			GameSyncQueue.Instance.QueueEvent(deserializer.ParseState(body));
 			break;
 		case 22:
-			GameSyncQueue.Instance.QueueEvent(deserializer.ParsePath(body));
+//			GameSyncQueue.Instance.QueueEvent(deserializer.ParsePath(msg.body));
 			break;
 		case 23:
-			GameSyncQueue.Instance.QueueEvent(deserializer.ParseFormation(body));
+//			GameSyncQueue.Instance.QueueEvent(deserializer.ParseFormation(msg.body));
 			break;
 		case 24:
 //			GameSyncQueue.Instance.QueueEvent(deserializer.ParseSkill(body));
@@ -126,15 +176,15 @@ public class UDPClient {
 	}
 
 	private void SendWithHeaders (byte[] bytes) {
-		byte[] result = new byte[18 + bytes.Length];
+		byte[] result = new byte[34 + bytes.Length];
 		result [0] = 0;
 		result [1] = 1;
-		string timestamp = GameTime.Timestamp();
+		string timestamp = GameTime.Instance.Timestamp();
 		Encoding.ASCII.GetBytes(timestamp).CopyTo(result, 2);
-		bytes.CopyTo(result, 18);
+		Encoding.ASCII.GetBytes(hash).CopyTo (result, 18);
+		bytes.CopyTo(result, 34);
 		messagesSent[timestamp] = result;
 		updClient.Send(result, result.Length, sendEP);
-
 		AddAckCheckTimer (timestamp);
 	}
 
@@ -144,12 +194,6 @@ public class UDPClient {
 		(new byte[] {1, 0}).CopyTo (bytes, 0);
 		stamp.CopyTo (bytes, 2);
 		updClient.Send(bytes, bytes.Length, sendEP);
-	}
-
-	private byte[] SubBytes(byte[] bytes, int start, int length) {
-		byte[] result = new byte[length];
-		Array.Copy(bytes, start, result, 0, length);
-		return result;
 	}
 
 	private void AddAckCheckTimer (string timestamp) {
