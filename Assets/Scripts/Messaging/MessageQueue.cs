@@ -25,11 +25,15 @@ public class MessageQueue {
 
     private void Update () {
         int i = 0;
-        while (messageQueue.Count > 0) {
+		for (int j = 0; j < messageQueue.Count; j++) {
             if (i >= limitQueueProcesing) return;
             i++;
             IGameMessage msg = messageQueue.Dequeue() as IGameMessage;
-            FireMessage(msg);
+			if (msg.Timestamp <= GameTime.Instance.Time()) {
+				FireMessage (msg);
+			} else {
+				messageQueue.Enqueue(msg);
+			}
         }
     }
     

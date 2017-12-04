@@ -10,7 +10,8 @@ public interface ISquadModel {
     event OnBoudsSetHandler OnBoundsSet;
     event OnObjectDestroy OnDestroy;
 
-    int Side { get;  }
+	string Owner { get;  }
+	int Version { get;  }
     string Name { get;  }
     float Health { get; set; }
     float Damage { get; }
@@ -32,8 +33,9 @@ public interface ISquadModel {
 
 public abstract class SquadModel : ISquadModel {
 
-    protected int side;
+    protected string owner;
     protected string name;
+	protected int version;
     protected string unitType;
     protected int unitCount;
     protected float maxHealth;
@@ -54,9 +56,10 @@ public abstract class SquadModel : ISquadModel {
     protected string offensiveSkill;
     protected string defensiveSkill;
 
-    public SquadModel (string iName, int iSide, Vector2 iPosition) {
+    public SquadModel (string iName, string iOwner, Vector2 iPosition) {
+		version = 0;
         name = iName;
-        side = iSide;
+		owner = iOwner;
         health = maxHealth;
         lastAttack = -1;
         position = iPosition;
@@ -68,8 +71,12 @@ public abstract class SquadModel : ISquadModel {
     public event OnObjectDestroy OnDestroy = () => { };
     public event OnBoudsSetHandler OnBoundsSet = (Vector2 bounds) => { };
     
-    public int Side {
-        get { return side; }
+	public string Owner {
+		get { return owner; }
+	}
+
+    public int Version {
+		get { return version; }
     }
 
     public string Name {

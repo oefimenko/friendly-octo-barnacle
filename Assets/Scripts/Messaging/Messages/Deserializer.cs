@@ -4,9 +4,9 @@ public class Deserializer {
 
 	public Deserializer () {}
 
-	public InitMessage ParseInit (string body) {
+	public InitMessage ParseInit (long stamp, string body) {
 		
-		InitMessage result = new InitMessage ();
+		InitMessage result = new InitMessage (stamp);
 		string[] prms = body.Split (';');
 
 		SquadStruct[] squads = new SquadStruct[prms.Length];
@@ -17,13 +17,13 @@ public class Deserializer {
 		return result;
 	}
 
-	public FormationChangedMessage ParseFormation (string body) {
+	public FormationChangedMessage ParseFormation (long stamp, string body) {
 		string[] prms = body.Split(';');
 		string[] squad_prms = prms[1].Split(':');
-		return new FormationChangedMessage (squad_prms[2], squad_prms[9]);
+		return new FormationChangedMessage (stamp, squad_prms[2], squad_prms[9]);
 	}
 
-	public PathAssignedMessage ParsePath (string body) {
+	public PathAssignedMessage ParsePath (long stamp, string body) {
 		string[] prms = body.Split(';');
 		string[] squad_prms = prms[1].Split(':');
 		string name = squad_prms[18] + squad_prms[19] + squad_prms[squad_prms.Length - 2] + squad_prms[squad_prms.Length - 1];
@@ -45,6 +45,6 @@ public class Deserializer {
 			));
 		}
 
-		return new PathAssignedMessage (squad_prms[2], path);
+		return new PathAssignedMessage (stamp, squad_prms[2], path);
 	}
 }

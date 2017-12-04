@@ -14,8 +14,9 @@ public static class UnitFactory {
 
     public static Vector2 UnitSize (string unitType) {
         GameObject unitPrefab = ResourceManager.Instance.Get("Units", unitType);
-        Vector2 baseSize = unitPrefab.GetComponent<BoxCollider2D>().bounds.size;
-        Vector2 scale = unitPrefab.transform.localScale;
-        return new Vector2(baseSize.x + scale.x, baseSize.y + scale.y);
+        Vector2 baseSize = unitPrefab.GetComponent<BoxCollider2D>().size;
+//        Vector2 scale = unitPrefab.transform.localScale;
+		return new Vector2(baseSize.x, baseSize.y);
+//        return new Vector2(baseSize.x + scale.x, baseSize.y + scale.y);
     }
 }

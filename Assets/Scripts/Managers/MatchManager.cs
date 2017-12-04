@@ -74,7 +74,7 @@ public class MatchManager {
 	private void OnInit (InitMessage msg) {
 		for (int i = 0; i < msg.Squads.Length; i++) {
 			SquadFactory.Create(
-				msg.Squads[i].Type, msg.Squads[i].Name, msg.Squads[i].Side, msg.Squads[i].Postion
+				msg.Squads[i].Type, msg.Squads[i].Name, msg.Squads[i].Owner, msg.Squads[i].Postion
 			);
 		}
 	}

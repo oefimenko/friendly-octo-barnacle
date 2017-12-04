@@ -51,7 +51,10 @@ public class GameTime {
 	}
 
 	private void Update () {
-		time += (long)(UnityEngine.Time.deltaTime * 1000000);
+//		UnityEngine.Debug.Log (time);
+//		UnityEngine.Debug.Log (UnityEngine.Time.deltaTime * 1000000);
+//		UnityEngine.Debug.Log ((long)(UnityEngine.Time.deltaTime * 1000000));
+		time = time + (long)(UnityEngine.Time.deltaTime * 1000000);
 	}
 }
 

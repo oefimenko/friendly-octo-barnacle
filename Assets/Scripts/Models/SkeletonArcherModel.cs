@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class SkeletonArcherModel : SquadModel {
 
-	public SkeletonArcherModel (string iName, int iSide, Vector2 iPosition) : base(iName, iSide, iPosition) {
+	public SkeletonArcherModel (string iName, string iOwner, Vector2 iPosition) : base(iName, iOwner, iPosition) {
 		unitType = "SkeletonArcher";
 		unitCount = 20;
 		maxHealth = 300f;

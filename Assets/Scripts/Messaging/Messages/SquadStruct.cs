@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class SquadStruct {
 
-	public int Side { get { return side; } }
+	public string Owner { get { return owner; } }
 	public string Name { get { return name; } }
 	public string Type { get { return type; } }
 	public float Health { get { return health; } }
@@ -19,7 +19,7 @@ public class SquadStruct {
 	public string OffensiveSkill { get { return offensiveSkill; } }
 	public string DefensiveSkill { get { return defensiveSkill; } }
 
-	private int side;
+	private string owner;
 	private string name;
 	private string type;
 	private float health;
@@ -39,7 +39,7 @@ public class SquadStruct {
 
 	public static SquadStruct FromSquadModel (ISquadModel model) {
 		SquadStruct squad = new SquadStruct ();
-		squad.side = model.Side;
+		squad.owner = model.Owner;
 		squad.name = model.Name;
 		//squad.type;
 		squad.health = model.Health;
@@ -62,7 +62,7 @@ public class SquadStruct {
 		SquadStruct squad = new SquadStruct ();
 		string[] prms = pyl.Split (':');
 
-		squad.side = Int16.Parse (prms[1]);
+		squad.owner = prms[1];
 		squad.name = prms[2];
 		squad.type = prms[0];
 //		squad.health = model.Health;

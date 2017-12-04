@@ -1,21 +1,42 @@
 ﻿using UnityEngine;
 
 public interface IGameMessage {
+	long Timestamp { get; }
     string SquadName { get; }
 }
 
-public class Connection : IGameMessage {
+public class GameMessage : IGameMessage {
+
+	private long timestamp;
+	public long Timestamp { get { return timestamp; } }
 	public string SquadName { get; set; }
-	public Connection (string username) { 
+
+	public GameMessage(long stamp) {
+		timestamp = stamp;
+	}
+
+	public GameMessage() {
+		timestamp = GameTime.Instance.Time();
+	}
+}
+
+public class Connection : GameMessage {
+	public new string SquadName { get; set; }
+
+	public Connection (string username) : base() { 
+		SquadName = username;
+	}
+
+	public Connection (long stamp, string username) : base(stamp) { 
 		SquadName = username;
 	}
 }
 
-public class InitMessage : IGameMessage {
+public class InitMessage : GameMessage {
 
 	public static int id = 12;
 
-	public string SquadName { get; set; }
+	public new string SquadName { get; set; }
 	public int Port { get; set; }
 	public string User1 { get; set; }
 	public string User2 { get; set; }
@@ -23,55 +44,80 @@ public class InitMessage : IGameMessage {
 	public int User2Side { get; set; }
 	public SquadStruct[] Squads { get; set; }
 
-	public InitMessage () {
+	public InitMessage () : base() {
+		SquadName = null;
+	}
+
+	public InitMessage (long stamp) : base(stamp) {
 		SquadName = null;
 	}
 }
 
-public class PathAssignedMessage : IGameMessage {
+public class PathAssignedMessage : GameMessage {
     
 	public static int id = 22;
 
-	public string SquadName { get; private set; }
+	public new string SquadName { get; private set; }
     public IPath Path { get; private set; }
+	public int NewVersion { get; private set; }
     
-	public PathAssignedMessage (string squad, IPath path) {
+	public PathAssignedMessage (ISquadModel squad, IPath newPath) : base() {
+		SquadName = squad.Name;
+		Path = newPath;
+		NewVersion = squad.Version + 1;
+	}
+
+	public PathAssignedMessage (long stamp, string squad, IPath path) : base(stamp) {
 		SquadName = squad;
         Path = path;
     }
 }
 
-public class FormationChangedMessage : IGameMessage {
+public class FormationChangedMessage : GameMessage {
     
 	public static int id = 23;
 
-	public string SquadName { get; private set; }
+	public new string SquadName { get; private set; }
     public string Formation { get; private set; }
-    
-	public FormationChangedMessage (string squad, string formation) {
+	public int NewVersion { get; private set; }
+
+	public FormationChangedMessage (ISquadModel squad, string formation) : base() {
+		SquadName = squad.Name;
+		Formation = formation;
+		NewVersion = squad.Version + 1;
+	}
+
+	public FormationChangedMessage (long stamp, string squad, string formation) : base(stamp) {
 		SquadName = squad;
         Formation = formation;
     }
 }
 
-public class SkillUsedMessage : IGameMessage {
+public class SkillUsedMessage : GameMessage {
     
 	public static int id = 24;
 
-	public string SquadName { get; private set; }
+	public new string SquadName { get; private set; }
     public string Skill { get; private set; }
-    
-	public SkillUsedMessage (string squad, string skill) {
+	public int NewVersion { get; private set; }
+
+	public SkillUsedMessage (ISquadModel squad, string skill) : base() {
+		SquadName = squad.Name;
+		Skill = skill;
+		NewVersion = squad.Version + 1;
+	}
+
+	public SkillUsedMessage (long stamp, string squad, string skill) : base(stamp) {
 		SquadName = squad;
         Skill = skill;
     }
 }
 
-public class SquadSyncMessage : IGameMessage {
+public class SquadSyncMessage : GameMessage {
     
 	public static int id = 21;
 
-	public string SquadName { get; private set; }
+	public new string SquadName { get; private set; }
     
 //    public int Side { get { return Squad.Side; } }
 //    public string Name { get { return Squad.Name; } }
@@ -88,7 +134,11 @@ public class SquadSyncMessage : IGameMessage {
 //    public string OffensiveSkill { get { return Squad.OffensiveSkill; } }
 //    public string DefensiveSkill { get { return Squad.DefensiveSkill; } }
     
-	public SquadSyncMessage (string squad) {
+	public SquadSyncMessage (string squad) : base() {
+		SquadName = squad;
+	}
+
+	public SquadSyncMessage (long stamp, string squad) : base(stamp) {
 		SquadName = squad;
     }
 }

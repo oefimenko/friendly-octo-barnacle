@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class SpiderModel : SquadModel {
 
-	public SpiderModel (string iName, int iSide, Vector2 iPosition) : base(iName, iSide, iPosition) {
+	public SpiderModel (string iName, string iOwner, Vector2 iPosition) : base(iName, iOwner, iPosition) {
         unitType = "Spider";
         unitCount = 16;
         maxHealth = 300f;

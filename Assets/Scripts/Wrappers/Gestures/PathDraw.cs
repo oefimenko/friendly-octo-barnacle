@@ -15,15 +15,19 @@ public class PathDraw : IGesture {
 	public event SquadPathDrawnHandler OnPathDrawFinish = delegate { };
 	
 	public bool Condition (Vector3 mousePosition, RaycastHit2D[] colliders) {
-		GameObject collider = null;
+		GameObject squad = null;
 		for (int i = 0; i < colliders.Length; i++ ) {
 			if (colliders[i].collider.gameObject.GetComponent<ISquadView>() != null) {
-				collider = colliders[i].collider.gameObject;
-				currentPath = new RenderedPath(mousePosition);
-				gui.SetActive(false);
+				GameObject gobject = colliders[i].collider.gameObject;
+				if (SquadMonitor.Instance.Get(gobject.name).Owner == GameManager.Instance.UserName) {
+					squad = colliders[i].collider.gameObject;
+					currentPath = new RenderedPath(mousePosition);
+					gui.SetActive(false);
+				}
+				
 			}
 		}
-		return Input.GetMouseButton(0) && collider != null;
+		return Input.GetMouseButton(0) && squad != null;
 	}
     
 	public void Update (Vector3 mousePosition) {

@@ -43,7 +43,7 @@ public class UDPClient {
 			"; ACK: " + ack.ToString() +
 			"; STAMP: " + stamp +
 			"; HASH: " + hash +
-			"; METHOD: " + type.ToString() +
+			"; METHOD: " + method.ToString() +
 			"; BODY: " + body;
 		}
 	}
@@ -135,28 +135,32 @@ public class UDPClient {
 	}
 
 	private void ProcessIncoming (Message msg) {
+		long stamp = Int64.Parse (msg.stamp);
 		switch (msg.method)
 		{
 		case 11:
 			break;
 		case 12:
-			long time = Int64.Parse(msg.stamp) + Int64.Parse(msg.body);
-			GameTime.Instance.SetTime(time);
+			long time = stamp + Int64.Parse (msg.body);
+			GameTime.Instance.SetTime (time);
 			break;
 		case 13:
-			GameSyncQueue.Instance.QueueEvent(deserializer.ParseInit(msg.body));
+			GameSyncQueue.Instance.QueueEvent (deserializer.ParseInit (stamp, msg.body));
+			break;
+		case 14:
+//			GameSyncQueue.Instance.QueueEvent(deserializer.ParseInit(stamp, msg.body));
 			break;
 		case 21:
-//			GameSyncQueue.Instance.QueueEvent(deserializer.ParseState(body));
+//			GameSyncQueue.Instance.QueueEvent(deserializer.ParseState(stamp, body));
 			break;
 		case 22:
-//			GameSyncQueue.Instance.QueueEvent(deserializer.ParsePath(msg.body));
+//			GameSyncQueue.Instance.QueueEvent(deserializer.ParsePath(stamp, msg.body));
 			break;
 		case 23:
-//			GameSyncQueue.Instance.QueueEvent(deserializer.ParseFormation(msg.body));
+//			GameSyncQueue.Instance.QueueEvent(deserializer.ParseFormation(stamp, msg.body));
 			break;
 		case 24:
-//			GameSyncQueue.Instance.QueueEvent(deserializer.ParseSkill(body));
+//			GameSyncQueue.Instance.QueueEvent(deserializer.ParseSkill(stamp, msg.body));
 			break;
 		default:
 			break;
